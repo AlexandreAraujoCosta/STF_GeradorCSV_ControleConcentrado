@@ -1,11 +1,16 @@
 import os, dsd
 
 path = 'ADIhtml\\'
+arquivo_a_gravar = 'ADI_CC.txt'
 lista = os.listdir(path)
+dsd.limpar_arquivo(arquivo_a_gravar)
 
 for nomedoarquivo in lista:
 
     html = dsd.carregar_arquivo(path+nomedoarquivo)
+    html = html.replace(',',';')
+    html = html.replace('\n','')
+    html = html.replace('  ',' ')
     
     # extrai campo incidente
     incidente = dsd.extrair (html, 
@@ -28,6 +33,10 @@ for nomedoarquivo in lista:
     else:
         liminar = 'não'
         classe = dsd.extrair(cln, '', ' - ') 
+        
+    classe.upper()
+    classe = classe.replace('ACAO DIRETA DE INCONSTITUCIONALIDADE','ADI')
+    classe = classe.replace('AÇÃO DIRETA DE INCONSTITUCIONALIDADE','ADI')
     
     # define dados a gravar
     dados = (incidente, classe, liminar, numero)
@@ -42,8 +51,8 @@ for nomedoarquivo in lista:
     
     ## definição de campo: relator
     relator = dsd.extrair(html,'Relator:</td><td><strong>','</strong>')
-    relator = relator.replace('MINISTRO','')
-    relator = relator.replace('MINISTRA','')
+    relator = relator.replace('MINISTRO ','')
+    relator = relator.replace('MINISTRA ','')
     
     
     ## definição de campo: distribuição
@@ -120,10 +129,18 @@ for nomedoarquivo in lista:
                 distribuicao, requerente, requerentetipo, requerido, 
                 dispositivoquestionado, resultadoliminar, resultadofinal, 
                 decisaomonofinal, fundamento, indexacao'''
+                
+    campos = campos.replace('\n','')
+    campos = campos.replace('             ','')
+    campos = campos.replace(',  ',',')
+    campos = campos.replace(', ',',')
+    campos = campos.replace(', ',',')
+    
 
     
     # grava dados
-    dsd.write_csv_header('ADI2.csv', campos)
-    dsd.write_csv_line('ADI2.csv', dados)
+    if classe != 'NA':
+        dsd.write_csv_header(arquivo_a_gravar, campos)
+        dsd.write_csv_line(arquivo_a_gravar, dados)
             
-    print (dados)
+    print (classe + numero)
